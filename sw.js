@@ -1,5 +1,5 @@
 // Работа без интернета для «Рецепты Вики». Версия меняется при каждой сборке — телефон подтянет новые рецепты.
-const VERSION = 'recepty-fb87ebf196';
+const VERSION = 'recepty-7b4f498c05';
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', (e) => {

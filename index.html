@@ -33,6 +33,8 @@
     --leaf-soft: #E2EEE4;
     --berry: #A4305B;
     --berry-soft: #F7E4EB;
+    --amber: #8A5A00;
+    --amber-soft: #FBEFD6;
     --font-display: "Unbounded", "Golos Text", system-ui, sans-serif;
     --font-body: "Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --radius: 14px;
@@ -41,12 +43,14 @@
     :root:not([data-theme="light"]) {
       --bg: #101511; --surface: #19201B; --ink: #E6EEE7; --muted: #9DAAA0; --line: #2B352E;
       --leaf: #7CC392; --leaf-soft: #1C3124; --berry: #F28DB3; --berry-soft: #3A1E2A;
+      --amber: #F2C46B; --amber-soft: #3A2E14;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
     --bg: #101511; --surface: #19201B; --ink: #E6EEE7; --muted: #9DAAA0; --line: #2B352E;
     --leaf: #7CC392; --leaf-soft: #1C3124; --berry: #F28DB3; --berry-soft: #3A1E2A;
+    --amber: #F2C46B; --amber-soft: #3A2E14;
     color-scheme: dark;
   }
 
@@ -175,6 +179,50 @@
   .awake[aria-pressed="true"] { background: var(--leaf); color: var(--bg); border-style: solid; }
   footer { padding-block: 10px 40px; color: var(--muted); font-size: 13px; }
 
+  /* «Что есть дома?»: подбор из книги, проверка продуктов по списку врача, бот */
+  .doma {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px; margin-block: 12px 4px; display: grid; gap: 10px;
+  }
+  .doma h2 { font-family: var(--font-display); font-weight: 500; font-size: 18px; margin: 0; }
+  .doma textarea {
+    width: 100%; font: inherit; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--bg); color: var(--ink); resize: vertical; min-height: 64px;
+  }
+  .doma textarea::placeholder { color: var(--muted); }
+  .doma-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .btn {
+    font: inherit; font-weight: 600; font-size: 15px; padding: 9px 16px; border-radius: 999px;
+    border: 0; cursor: pointer; background: var(--leaf); color: var(--bg);
+  }
+  .btn-berry { background: var(--berry); }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  .btn:disabled { opacity: 0.55; cursor: default; }
+  .doma-out { display: grid; gap: 14px; }
+  .doma-out:empty { display: none; }
+  .doma-block h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .pchips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pchip { font-size: 14px; padding: 4px 10px; border-radius: 8px; line-height: 1.4; }
+  .pchip-ok { background: var(--leaf-soft); color: var(--ink); }
+  .pchip-ok i { color: var(--leaf); font-style: normal; font-weight: 600; }
+  .pchip-no { background: var(--berry-soft); color: var(--berry); }
+  .pchip-ask, .pchip-warn { background: var(--amber-soft); color: var(--amber); }
+  .pchip-unknown { background: var(--bg); border: 1px solid var(--line); color: var(--muted); }
+  .pchip b { font-weight: 600; }
+  .sugg { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .sugg li { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; }
+  .linkbtn {
+    font: inherit; font-weight: 600; color: var(--leaf); background: none; border: 0; padding: 0; cursor: pointer;
+    text-align: left; text-decoration: underline; text-underline-offset: 3px;
+  }
+  .sugg .miss { font-size: 14px; color: var(--muted); }
+  .sugg .full { font-size: 14px; color: var(--leaf); font-weight: 600; }
+  .bot-ok { background: var(--leaf-soft); border-radius: 10px; padding: 10px 12px; font-size: 15px; margin: 0; }
+  .bot-bad { background: var(--berry-soft); color: var(--berry); border-radius: 10px; padding: 10px 12px; font-size: 15px; margin: 0; }
+  .saved-row { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+  .saved-row small { color: var(--muted); }
+  .recipe { scroll-margin-top: 150px; }
+
   /* iPad и широкие экраны: две колонки карточек, открытый рецепт на всю ширину, продукты слева, шаги справа */
   @media (min-width: 740px) {
     body { font-size: 17px; }
@@ -206,6 +254,21 @@
     <div class="facts" id="facts"></div>
     <button class="awake" id="awake" type="button" aria-pressed="false">Не гасить экран, пока готовлю</button>
   </header>
+
+  <section class="doma" id="doma" aria-labelledby="doma-title">
+    <h2 id="doma-title">Что есть дома?</h2>
+    <p class="note">Напишите продукты через запятую. Я подберу рецепты из книги и проверю продукты по списку врача.</p>
+    <textarea id="doma-q" rows="2" placeholder="Например: курица, кабачок, гречка, морковь" aria-label="Продукты, которые есть дома"></textarea>
+    <div class="doma-actions">
+      <button type="button" class="btn" id="doma-go">Подобрать рецепт</button>
+      <button type="button" class="btn btn-berry" id="bot-go" hidden>Придумать новый рецепт</button>
+      <button type="button" class="btn btn-ghost" id="bot-stop" hidden>Остановить</button>
+    </div>
+    <p class="note" id="bot-hint" hidden>Совсем новый рецепт из этих продуктов придумывает бот: он работает в версии рецептов в Claude у папы.</p>
+    <div class="doma-out" id="doma-out" aria-live="polite"></div>
+    <div class="doma-out" id="bot-out" aria-live="polite"></div>
+    <div class="doma-out" id="bot-saved" hidden></div>
+  </section>
 
   <details class="panel" id="rules-panel">
     <summary>Список врача: что можно и что нельзя</summary>
@@ -278,6 +341,189 @@
   </details>
   <footer id="footer"></footer>
 </div>
+
+<script id="pravila" type="application/json">
+{
+ "forbidden": [
+  [
+   "пшени|пшенн|пшено|ржан|рожь|\\bрж[иу]\\b|овсян|овес|манн|манк|кукуруз|перлов|ячнев|ячмен|полб|спельт|просо|сорго|булгур|кускус|макарон|спагетт|вермишел|лапш",
+   "злаки, макароны"
+  ],
+  [
+   "\\bхлеб",
+   "хлеб из злаков"
+  ],
+  [
+   "батон|булк|сухар|печень[еяю]|пряник|торт|пирожн|вафл",
+   "выпечка, кондитерское"
+  ],
+  [
+   "картоф|картошк|крахмал",
+   "картофель"
+  ],
+  [
+   "томат|помидор|кетчуп",
+   "томаты"
+  ],
+  [
+   "паприк|чили|кайенск|баклажан|болгарск|перец\\s+сладк|сладк\\w*\\s+перец|остр\\w*\\s+перец|халапень|физалис|годжи",
+   "паслёновые"
+  ],
+  [
+   "молок|кефир|йогурт|сметан|творог|ряженк|простокваш|сливк|\\bсыр(ы|а|ом|ок|ки|ник\\w*)?\\b|брынз|моцарел|пармез",
+   "молочное"
+  ],
+  [
+   "яйц|яичн|желт[ок]к|белок\\s+яй|майонез",
+   "яйца"
+  ],
+  [
+   "сахар|сладост|конфет\\w*\\s+покуп|шоколад|какао|варень|джем|сироп|сгущ|газировк|лимонад|\\bкола\\b|нектар|покупн\\w*\\s+сок|сок\\w*\\s+из\\s+пакет",
+   "сахар и сладкое"
+  ],
+  [
+   "банан|яблок|груш|апельсин|мандарин|лимон|лайм|грейпфрут|виноград|арбуз|дын|персик|абрикос|нектарин|\\bслив(а|ы|у|ой)\\b|манго|ананас|киви|хурм",
+   "сочные фрукты (уточнить у врача)"
+  ],
+  [
+   "подсолнечн|оливков|растительн|рапсов|кокосов\\w*\\s+масл|льнян\\w*\\s+масл|кунжутн\\w*\\s+масл",
+   "растительное масло"
+  ],
+  [
+   "арахис|\\bсо[яи]\\b|соев|тофу",
+   "арахис, соя"
+  ],
+  [
+   "консерв|колбас|сосиск|ветчин|бекон|копчен|фастфуд|чипс",
+   "консервы, фастфуд"
+  ]
+ ],
+ "question": [
+  [
+   "\\bмед\\b|меда\\b|медом\\b|стеви|эритрит|финик|изюм|курага|чернослив|сухофрукт",
+   "подсластители, сухофрукты"
+  ],
+  [
+   "семен|семечк|\\bлен\\b|льнян|чиа|кунжут|тахин",
+   "семена"
+  ],
+  [
+   "киноа|амарант",
+   "киноа, амарант"
+  ],
+  [
+   "кокос|гриб|шампиньон|батат",
+   "кокос, грибы, батат"
+  ],
+  [
+   "уксус|горчиц",
+   "уксус, горчица"
+  ],
+  [
+   "свинин|баранин|говядин",
+   "мясо взрослых животных"
+  ],
+  [
+   "желатин|агар|разрыхлит",
+   "желатин, агар, разрыхлитель"
+  ],
+  [
+   "нори|вакаме|водоросл|морск\\w*\\s+капуст",
+   "водоросли"
+  ],
+  [
+   "кэроб|кероб|какао",
+   "какао, кэроб"
+  ],
+  [
+   "вишн|черешн",
+   "вишня, черешня"
+  ],
+  [
+   "хмели|карри|приправ\\w*\\s+для",
+   "смеси специй (часто с паприкой и чили)"
+  ],
+  [
+   "черн\\w*\\s+ча[йя]|зелен\\w*\\s+ча[йя]|кофе|цикори",
+   "чай, кофе (нет в списке врача)"
+  ],
+  [
+   "шиповник",
+   "шиповник"
+  ]
+ ],
+ "conditional": [
+  [
+   "мук[аиу]",
+   "гречнев|нутов",
+   "мука — только гречневая или нутовая"
+  ],
+  [
+   "масл[оаеу]",
+   "сливочн|топлен|гхи",
+   "масло — только сливочное или топлёное"
+  ],
+  [
+   "молок",
+   "миндальн",
+   "молоко — только домашнее миндальное"
+  ],
+  [
+   "хлопь",
+   "гречнев",
+   "хлопья — только гречневые"
+  ],
+  [
+   "\\bперец|\\bперц",
+   "черн",
+   "перец — паслёновый (кроме чёрного)"
+  ],
+  [
+   "орех|миндал|кешью|фундук|кедров|бразильск",
+   "сыр",
+   "орехи — только сырые"
+  ],
+  [
+   "\\bрис",
+   "бур|нешлифован",
+   "рис — только бурый (нешлифованный), не чаще 2 раз в неделю"
+  ]
+ ],
+ "safe": [
+  [
+   "миндальн\\w*\\s+молок\\w*",
+   "питье-из-сырого-миндаля"
+  ],
+  [
+   "орехов\\w*\\s+майонез\\w*",
+   "соус-из-сырых-орехов"
+  ],
+  [
+   "гречнев\\w*\\s+хлеб\\w*",
+   "гречхлеб"
+  ],
+  [
+   "хлеб\\w*\\s+из\\s+зеленой\\s+гречки",
+   "гречхлеб"
+  ]
+ ],
+ "allowed": [
+  "гречк|гречнев|греча",
+  "\\bнут|чечевиц|фасол|горох|горош|\\bмаш\\b|бобов",
+  "\\bрис",
+  "авокадо",
+  "орех|миндал|кешью|фундук|кедров|бразильск",
+  "ягод|клубник|малин|черник|смородин|клюкв|брусник|голубик|ежевик|землян|крыжовн",
+  "рыб|треск|хек|минта|лосос|форел|судак|пикш|кревет|кальмар|миди|морепродукт|гребеш",
+  "овощ|капуст|морков|свекл|кабач|цукин|тыкв|брокколи|шпинат|огур|\\bлук|чеснок|сельдере|\\bреп[аыу]\\b|редис|редьк|зелен|укроп|петрушк|кинз|базилик|салат|спарж|стручк|пастернак|фенхел|руккол|щавел",
+  "индейк|куриц|\\bкур|кролик|печен|телят|птиц|цыпл",
+  "квашен|кимчи",
+  "сливочн\\w*\\s+масл|топлен|гхи",
+  "\\bсоль|\\bвода|корица|зира|кумин|тимьян|орегано|розмарин|шалфей|мята|мелисс|чабрец|имбир|лавров"
+ ],
+ "staples": "\\bсоль\\b|\\bвода\\b|кипят|лавров|корица|зира|кумин|тимьян|орегано|розмарин|шалфей|сушен\\w*\\s+трав|\\bтравы|имбир|масл|гхи"
+}
+</script>
 
 <script id="recepty" type="application/json">
 {
@@ -1498,6 +1744,7 @@
 
   function recipeCard(r) {
     var art = el('article', 'recipe');
+    art.id = 'r-' + r.id;
     var head = el('button', 'recipe-head');
     head.type = 'button';
     head.setAttribute('aria-expanded', String(!!opened[r.id]));
@@ -1600,6 +1847,368 @@
   window.addEventListener('hashchange', fromHash);
   q.addEventListener('input', render);
   fromHash();
+
+  // ===== Правила врача: те же, что читает proverka.py (блок #pravila) =====
+  var RULES = JSON.parse(document.getElementById('pravila').textContent);
+  // Шаблоны написаны для Python: в браузере \b и \w не понимают русские буквы — переводим
+  function rx(p, flags) {
+    var out = '';
+    for (var i = 0; i < p.length; i++) {
+      var c = p[i];
+      if (c === '\\' && p[i + 1] === 'b') {
+        var nx = p[i + 2];
+        var start = nx !== undefined && /[\p{L}(\[]/u.test(nx);
+        out += start ? '(?:^|[^\\p{L}\\p{N}_])' : '(?=$|[^\\p{L}\\p{N}_])';
+        i++; continue;
+      }
+      if (c === '\\' && p[i + 1] === 'w') { out += '[\\p{L}\\p{N}_]'; i++; continue; }
+      if (c === '\\') { out += c + (p[i + 1] || ''); i++; continue; }
+      out += c;
+    }
+    return new RegExp(out, 'u' + (flags || ''));
+  }
+  var R = {
+    strict: RULES.forbidden.map(function (x) { return { re: rx(x[0]), why: x[1], st: 'no' }; })
+      .concat(RULES.question.map(function (x) { return { re: rx(x[0]), why: x[1], st: 'ask' }; })),
+    conditional: RULES.conditional.map(function (x) { return { re: rx(x[0]), ok: rx(x[1]), why: x[2] }; }),
+    safe: RULES.safe.map(function (x) { return { re: rx(x[0], 'g'), to: x[1] }; }),
+    allowed: RULES.allowed.map(function (p) { return rx(p); }),
+    staples: rx(RULES.staples)
+  };
+  function normR(s) {
+    s = norm(s);
+    R.safe.forEach(function (x) { s = s.replace(x.re, x.to); });
+    return s;
+  }
+  function uniq(a) { return a.filter(function (x, i) { return a.indexOf(x) === i; }); }
+
+  // Один продукт: можно / нельзя / спросить врача / уточнить / нет в списке
+  function classify(product) {
+    var t = normR(product);
+    for (var i = 0; i < R.strict.length; i++) if (R.strict[i].re.test(t)) return { st: R.strict[i].st, why: R.strict[i].why };
+    for (var j = 0; j < R.conditional.length; j++) {
+      var c = R.conditional[j];
+      if (c.re.test(t) && !c.ok.test(t)) return { st: 'warn', why: c.why };
+    }
+    for (var k = 0; k < R.allowed.length; k++) if (R.allowed[k].test(t)) return { st: 'ok' };
+    return { st: 'unknown' };
+  }
+  // Целый рецепт (для бота) — так же, как proverka.py
+  function checkRecipe(r) {
+    var probs = [];
+    var ingrT = r.ingr.map(function (x) { return normR(x[0] + ' ' + x[1]); });
+    ingrT.concat(r.steps.map(normR)).forEach(function (t) {
+      R.strict.forEach(function (x) {
+        var m = t.match(x.re);
+        if (m) probs.push('«' + m[0].replace(/^[^\p{L}]+/u, '') + '» (' + x.why + ')');
+      });
+    });
+    ingrT.forEach(function (t) {
+      R.conditional.forEach(function (x) { if (x.re.test(t) && !x.ok.test(t)) probs.push(x.why); });
+    });
+    return uniq(probs);
+  }
+
+  // ===== Подбор рецептов из книги по продуктам =====
+  function parseProducts(s) {
+    return uniq(String(s).split(/[,;\n]+|\s+и\s+/u).map(function (x) {
+      return x.replace(/\d+([.,]\d+)?\s*(кг|гр|г|шт|мл|л)?\.?/giu, '').replace(/\s+/g, ' ').trim();
+    }).filter(function (x) { return x.length >= 2; }));
+  }
+  var ADJ = /(ая|яя|ый|ий|ой|ое|ее|ые|ие)$/u;
+  var GROUPS = [
+    ['ягод', 'клубник', 'малин', 'черник', 'смородин', 'клюкв', 'брусник', 'голубик', 'ежевик', 'землян'],
+    ['зелен', 'укроп', 'петрушк', 'кинз', 'базилик'],
+    ['рыб', 'треск', 'хек', 'минта', 'лосос', 'форел', 'судак', 'пикш'],
+    ['кур', 'бедр', 'голен'],
+    ['орех', 'грецк', 'миндал', 'кешью', 'фундук', 'кедров']
+  ];
+  function stem(w) { return w.length <= 4 ? w : w.slice(0, Math.max(4, w.length - 2)); }
+  function productStems(products) {
+    var stems = [];
+    products.forEach(function (p) {
+      var words = norm(p).split(/[^\p{L}]+/u).filter(function (w) { return w.length >= 3; });
+      var nouns = words.length > 1 ? words.filter(function (w) { return !ADJ.test(w); }) : words;
+      (nouns.length ? nouns : words).forEach(function (w) {
+        var s = stem(w);
+        stems.push(s);
+        GROUPS.forEach(function (g) {
+          if (g.some(function (k) { return s.indexOf(k) === 0 || k.indexOf(s) === 0; })) stems = stems.concat(g);
+        });
+      });
+    });
+    return uniq(stems);
+  }
+  function covers(ingrName, stems) {
+    var words = norm(ingrName).split(/[^\p{L}]+/u).filter(Boolean);
+    return stems.some(function (s) { return words.some(function (w) { return w.indexOf(s) === 0; }); });
+  }
+  function shortName(n) { return n.replace(/\s*\([^)]*\)/g, '').split(/[,:]/)[0].trim(); }
+  function suggest(products) {
+    var stems = productStems(products);
+    var perProduct = products.map(function (p) { return productStems([p]); });
+    var rows = [];
+    recipes.forEach(function (r) {
+      var req = r.ingr.filter(function (it) { return !/по желанию/u.test(it[1]) && !R.staples.test(normR(it[0])); });
+      if (!req.length) return;
+      var have = req.filter(function (it) { return covers(it[0], stems); });
+      if (!have.length) return;
+      var miss = req.filter(function (it) { return have.indexOf(it) === -1; });
+      if (miss.length > 3 && have.length / req.length < 0.5) return;
+      // сколько ваших продуктов идёт в дело: чем больше, тем выше в списке
+      var used = perProduct.filter(function (ps) { return r.ingr.some(function (it) { return covers(it[0], ps); }); }).length;
+      rows.push({ r: r, have: have.length, miss: miss, used: used });
+    });
+    rows.sort(function (a, b) { return b.used - a.used || a.miss.length - b.miss.length || b.have - a.have; });
+    return rows.slice(0, 8);
+  }
+  function openRecipe(id) {
+    current = 'vse';
+    q.value = '';
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    opened[id] = true;
+    renderChips(); render();
+    var a = document.getElementById('r-' + id);
+    if (a) {
+      var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      a.scrollIntoView({ block: 'start', behavior: still ? 'auto' : 'smooth' });
+    }
+  }
+
+  var dq = document.getElementById('doma-q');
+  var domaOut = document.getElementById('doma-out');
+  var LABEL = { ok: 'можно', no: 'нельзя', ask: 'нет в списке, спросить врача', warn: 'уточнить', unknown: 'нет в списке врача' };
+  try { dq.value = localStorage.getItem('doma-q') || ''; } catch (e) {}
+  dq.addEventListener('input', function () { try { localStorage.setItem('doma-q', dq.value); } catch (e) {} });
+
+  function renderDoma() {
+    var products = parseProducts(dq.value);
+    domaOut.innerHTML = '';
+    if (!products.length) { domaOut.appendChild(el('p', 'note', 'Напишите хотя бы один продукт, например: курица, кабачок.')); return; }
+
+    var chk = el('div', 'doma-block');
+    chk.appendChild(el('h3', null, 'Проверка по списку врача'));
+    var chips = el('div', 'pchips');
+    products.forEach(function (p) {
+      var c = classify(p);
+      var chip = el('span', 'pchip pchip-' + c.st);
+      chip.appendChild(el('b', null, p));
+      var label = c.st === 'warn'
+        ? ' — ' + c.why.replace(/^[^—]+—\s*/u, '')
+        : ' — ' + LABEL[c.st] + (c.why && c.st === 'no' ? ': ' + c.why : '');
+      if (c.st === 'ok') { chip.appendChild(document.createTextNode(' — ')); chip.appendChild(el('i', null, 'можно')); }
+      else chip.appendChild(document.createTextNode(label));
+      chips.appendChild(chip);
+    });
+    chk.appendChild(chips);
+    domaOut.appendChild(chk);
+
+    var usable = products.filter(function (p) { var st = classify(p).st; return st !== 'no' && st !== 'ask'; });
+    var rows = suggest(usable);
+    var box = el('div', 'doma-block');
+    box.appendChild(el('h3', null, 'Можно приготовить из книги'));
+    if (!rows.length) {
+      box.appendChild(el('p', 'note', 'Из книги ничего не подходит.' + (sample ? ' Нажмите «Придумать новый рецепт» — бот придумает блюдо из этих продуктов.' : '')));
+    } else {
+      var ul = el('ul', 'sugg');
+      rows.forEach(function (row) {
+        var li = el('li');
+        var b = el('button', 'linkbtn', row.r.name);
+        b.type = 'button';
+        b.addEventListener('click', function () { openRecipe(row.r.id); });
+        li.appendChild(b);
+        if (row.miss.length) li.appendChild(el('span', 'miss', 'не хватает: ' + row.miss.map(function (it) { return shortName(it[0]).toLowerCase(); }).join(', ')));
+        else li.appendChild(el('span', 'full', 'всё есть'));
+        ul.appendChild(li);
+      });
+      box.appendChild(ul);
+      box.appendChild(el('p', 'note', 'Соль, воду, масло и специи считаю, что дома есть.'));
+    }
+    domaOut.appendChild(box);
+  }
+  document.getElementById('doma-go').addEventListener('click', renderDoma);
+  dq.addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); renderDoma(); } });
+
+  // ===== Бот: новый рецепт из продуктов (только в Claude: спрашивает Claude от имени того, кто открыл страницу) =====
+  var botBtn = document.getElementById('bot-go');
+  var stopBtn = document.getElementById('bot-stop');
+  var botHint = document.getElementById('bot-hint');
+  var botOut = document.getElementById('bot-out');
+  var savedBox = document.getElementById('bot-saved');
+  var sample = null, db = null, botCtl = null;
+
+  var DOCTOR = [
+    'НЕЛЬЗЯ: крупы из злаков (пшеница, рожь, овёс, ячмень, кукуруза, манка, пшено, булгур, кускус), хлеб, выпечка и мука из злаков, макароны, картофель и крахмал;',
+    'все молочные продукты (молоко, творог, сыр, сметана, кефир, йогурт, сливки) — кроме сливочного и топлёного масла (гхи);',
+    'сахар, мёд, сиропы, сладости, шоколад, какао, варенье, сочные фрукты (яблоки, груши, бананы, цитрусы и лимон, виноград, персики и т. п.), сухофрукты и финики;',
+    'любое растительное масло (подсолнечное, оливковое, кокосовое, льняное и другие);',
+    'яйца и майонез; арахис и соя (соевый соус, тофу);',
+    'паслёновые: картофель, томаты, сладкий и острый перец, паприка, чили, баклажаны, смеси специй с перцем (карри, хмели-сунели);',
+    'консервы, копчёное, колбасы, фастфуд, покупные соусы.',
+    'ПОКА НЕЛЬЗЯ (ждём ответа врача): семена (лён, чиа, кунжут, подсолнечные, тыквенные), кокос, грибы, батат, водоросли, киноа, амарант, вишня, уксус, лимонный сок, горчица, говядина, свинина, баранина, чёрный и зелёный чай, кофе.',
+    'МОЖНО: гречка, зелёная гречка и гречневая мука; бобовые (нут, нутовая мука, чечевица, фасоль, горох, маш); бурый рис (не чаще 2 раз в неделю); авокадо; сырые замоченные орехи (не жарить и не запекать); ягоды; рыба и морепродукты; все овощи, кроме паслёновых, особенно зелёные; индейка, курица, кролик, телятина, говяжья печень; квашеная капуста; сливочное и топлёное масло; соль, зелень, мягкие специи (корица, зира, тимьян, орегано, розмарин, лавровый лист, имбирь).'
+  ].join('\n');
+
+  function botPrompt(products, feedback) {
+    return 'Придумай ОДИН домашний рецепт для девочки 10 лет, которая соблюдает диету от врача.\n\n' +
+      'Продукты, которые есть дома: ' + products.join(', ') + '.\n' +
+      'Используй в основном их, все использовать не обязательно. Можно добавить соль, воду, сливочное или топлёное масло, специи из списка «МОЖНО» и не больше двух других продуктов из списка «МОЖНО».\n\n' +
+      'Список врача — соблюдай строго, ни одного продукта из «НЕЛЬЗЯ» и «ПОКА НЕЛЬЗЯ», даже в шагах и советах:\n' + DOCTOR + '\n\n' +
+      'Требования: просто и понятно, без острого, реальные граммы и минуты, 3–7 шагов, по-русски. Не пиши о лечении и болезнях.\n' +
+      (feedback ? '\nПрошлый вариант нарушил список врача: ' + feedback + '. Придумай заново без этого.\n' : '') +
+      '\nОтветь только JSON-объектом такого вида:\n' +
+      '{"name": "Название", "cat": "osnovnoe", "about": "одно предложение о блюде", "time": "30 мин", "yield": "2 порции", "ingr": [["Продукт", "количество"]], "steps": ["Шаг"], "tip": "короткий совет"}\n' +
+      'cat — один из: hleb (хлеб, лепёшки, блины), sladosti (десерты), garniry (гарниры), osnovnoe (основное блюдо), zakuski (салаты, закуски), napitki (напитки), raznoe (супы, каши, соусы).';
+  }
+
+  function cleanBotRecipe(x) {
+    if (!x || typeof x !== 'object' || typeof x.name !== 'string' || !Array.isArray(x.ingr) || !Array.isArray(x.steps)) return null;
+    var ingr = x.ingr.filter(function (it) { return Array.isArray(it) && it.length >= 1; })
+      .map(function (it) { return [String(it[0]), String(it[1] == null ? '' : it[1])]; });
+    var steps = x.steps.map(String).filter(Boolean);
+    if (ingr.length < 2 || steps.length < 2) return null;
+    var cat = cats.some(function (c) { return c.id === x.cat; }) ? x.cat : 'raznoe';
+    var r = {
+      id: 'bot-' + Date.now(), cat: cat, name: x.name.slice(0, 120), about: String(x.about || '').slice(0, 300),
+      time: String(x.time || ''), yield: String(x.yield || ''), tags: ['придумал бот'], ingr: ingr, steps: steps,
+      tip: String(x.tip || '')
+    };
+    if (ingr.some(function (it) { return /(^|[^\p{L}])рис/u.test(norm(it[0])); })) r.tags.push('рис');
+    return r;
+  }
+
+  function botMsg(text, cls) {
+    botOut.innerHTML = '';
+    botOut.appendChild(el('p', cls || 'note', text));
+  }
+  function botBusy(on) {
+    botBtn.disabled = on;
+    stopBtn.hidden = !on;
+  }
+  function botError(e) {
+    var code = e && e.code;
+    if (code === 'cancelled') return botMsg('Остановлено.');
+    if (code === 'not_granted' || code === 'sampling_disabled' || code === 'not_declared' || code === 'capability_disabled' || code === 'capability_removed') {
+      botBtn.hidden = true;
+      return botMsg('Бот здесь недоступен: этой странице не разрешили обращаться к Claude.');
+    }
+    if (code === 'rate_limited') return botMsg('Слишком много запросов подряд или закончились лимиты Claude. Попробуйте через несколько минут.');
+    if (code === 'session_expired') return botMsg('Войдите в Claude заново и нажмите ещё раз.');
+    botMsg('Не получилось придумать рецепт. Нажмите «Придумать новый рецепт» ещё раз.');
+  }
+
+  function showBot(r, products, probs, saved) {
+    botOut.innerHTML = '';
+    if (probs.length) {
+      botOut.appendChild(el('p', 'bot-bad', 'Бот предложил то, что нельзя по списку врача: ' + probs.join('; ') + '. Этот рецепт не готовьте, попробуйте ещё раз.'));
+    } else {
+      botOut.appendChild(el('p', 'bot-ok', 'Рецепт придумал бот. Проверка по списку врача пройдена: запрещённых продуктов нет. Всё равно прочитайте его перед готовкой.'));
+    }
+    opened[r.id] = true;
+    botOut.appendChild(recipeCard(r));
+    var acts = el('div', 'doma-actions');
+    if (db && !probs.length && !saved) {
+      var save = el('button', 'btn', 'Сохранить для книги');
+      save.type = 'button';
+      save.addEventListener('click', function () {
+        save.disabled = true;
+        db.collection('bot').add({ recipe: r, products: products, createdAt: new Date().toISOString() }).then(function () {
+          save.textContent = 'Сохранено';
+          acts.appendChild(el('p', 'note', 'Напишите Claude «Рецепты для Вики» — он проверит рецепт и добавит его в книгу и приложение.'));
+        }).catch(function (e) {
+          save.disabled = false;
+          acts.appendChild(el('p', 'note', e && e.code === 'quota_exceeded' ? 'Место для сохранений закончилось.' : 'Не сохранилось, попробуйте ещё раз.'));
+        });
+      });
+      acts.appendChild(save);
+    }
+    if (sample && !saved) {
+      var again = el('button', 'btn btn-ghost', 'Придумать другой');
+      again.type = 'button';
+      again.addEventListener('click', runBot);
+      acts.appendChild(again);
+    }
+    if (acts.childNodes.length) botOut.appendChild(acts);
+  }
+
+  async function runBot() {
+    if (!sample) return;
+    var products = parseProducts(dq.value).filter(function (p) { var st = classify(p).st; return st !== 'no' && st !== 'ask'; });
+    if (!products.length) { botMsg('Напишите продукты, которые можно по списку врача, и нажмите ещё раз.'); return; }
+    botBusy(true);
+    var feedback = '';
+    try {
+      for (var attempt = 0; attempt < 2; attempt++) {
+        botMsg(attempt === 0 ? 'Бот думает… Обычно это 20–60 секунд. В первый раз Claude спросит разрешение.' : 'Бот предложил запрещённое, прошу переделать…');
+        botCtl = new AbortController();
+        var res;
+        try { res = await sample.json(botPrompt(products, feedback), { signal: botCtl.signal, cache: false }); }
+        catch (e) { botError(e); return; }
+        var r = cleanBotRecipe(res);
+        if (!r) { botMsg('Бот ответил непонятно. Нажмите «Придумать новый рецепт» ещё раз.'); return; }
+        var probs = checkRecipe(r);
+        if (!probs.length || attempt === 1) { showBot(r, products, probs); return; }
+        feedback = probs.join('; ');
+      }
+    } finally {
+      botBusy(false);
+    }
+  }
+  botBtn.addEventListener('click', runBot);
+  stopBtn.addEventListener('click', function () { if (botCtl) botCtl.abort(); });
+
+  function fmtDate(iso) {
+    var d = new Date(iso);
+    return isNaN(d) ? '' : d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+  }
+  function renderSaved(docs) {
+    savedBox.innerHTML = '';
+    savedBox.hidden = !docs.length;
+    if (!docs.length) return;
+    var blk = el('div', 'doma-block');
+    blk.appendChild(el('h3', null, 'Сохранённые идеи бота: ' + docs.length));
+    blk.appendChild(el('p', 'note', 'Ждут, когда Claude их проверит и добавит в книгу.'));
+    var ul = el('ul', 'sugg');
+    docs.forEach(function (d) {
+      var v = d.data() || {};
+      var rec = v.recipe;
+      if (!rec || !rec.name) return;
+      var li = el('li', 'saved-row');
+      var b = el('button', 'linkbtn', rec.name);
+      b.type = 'button';
+      b.addEventListener('click', function () {
+        if (cleanBotRecipe(rec)) { rec.id = rec.id || ('bot-' + d.id); showBot(rec, v.products || [], checkRecipe(rec), true); }
+      });
+      li.appendChild(b);
+      li.appendChild(el('small', null, fmtDate(v.createdAt)));
+      var del = el('button', 'linkbtn', 'удалить');
+      del.type = 'button';
+      del.style.color = 'var(--muted)';
+      del.addEventListener('click', function () {
+        if (del.dataset.sure !== '1') { del.dataset.sure = '1'; del.textContent = 'точно удалить?'; return; }
+        db.collection('bot').doc(d.id).delete().catch(function () { del.textContent = 'не удалилось'; });
+      });
+      li.appendChild(del);
+      ul.appendChild(li);
+    });
+    blk.appendChild(ul);
+    savedBox.appendChild(blk);
+  }
+
+  if (window.claude && typeof window.claude.use === 'function') {
+    window.claude.use('sample').then(function (s) {
+      sample = s;
+      botBtn.hidden = !s;
+      botHint.hidden = !!s;
+    }).catch(function () { botHint.hidden = false; });
+    window.claude.use('db').then(function (d) {
+      db = d;
+      if (!d) return;
+      d.collection('bot').orderBy('createdAt', 'desc').limit(30).onSnapshot(function (snap) { renderSaved(snap.docs); }, function () { savedBox.hidden = true; });
+    }).catch(function () {});
+  } else {
+    botHint.hidden = false;
+  }
 
   // Не гасить экран, пока готовим
   var awakeBtn = document.getElementById('awake');
