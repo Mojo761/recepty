@@ -247,6 +247,37 @@
     .recipe-body { animation: open 0.18s ease-out; }
     @keyframes open { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
   }
+
+  /* Меню на неделю и список покупок */
+  .menu-days { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .menu-days::-webkit-scrollbar { display: none; }
+  .menu-days .chip { padding: 7px 12px; }
+  .menu-day { display: grid; gap: 10px; }
+  .menu-day h3 { font-family: var(--font-display); font-weight: 500; font-size: 17px; margin: 0; }
+  .meal { display: grid; grid-template-columns: 82px 1fr; gap: 4px 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .meal:first-of-type { border-top: 0; }
+  .meal-name { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); padding-top: 2px; }
+  .meal-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .meal-items li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+  .meal-items .pill { font-size: 12px; }
+  .pill.again { background: var(--bg); border: 1px solid var(--line); color: var(--muted); }
+  .pill.sweet { background: var(--berry-soft); color: var(--berry); font-weight: 600; }
+  .menu-sub { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .prep { margin: 0; padding-left: 20px; display: grid; gap: 6px; font-size: 15px; }
+  .prep b { font-weight: 600; }
+  .swaps { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; }
+  .buy-group h4 { margin: 10px 0 2px; font-size: 14px; color: var(--leaf); }
+  .buy { list-style: none; margin: 0; padding: 0; }
+  .buy label { display: flex; gap: 10px; align-items: baseline; padding: 7px 0; cursor: pointer; border-bottom: 1px dashed var(--line); }
+  .buy input { accent-color: var(--leaf); width: 18px; height: 18px; flex: none; transform: translateY(3px); }
+  .buy .name { flex: 1; min-width: 0; }
+  .buy .name small { display: block; color: var(--muted); font-size: 12.5px; }
+  .buy .qty { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; max-width: 45%; }
+  .buy input:checked ~ .name, .buy input:checked ~ .qty { text-decoration: line-through; opacity: 0.5; }
+  @media (min-width: 740px) {
+    .buy-cols { columns: 2; column-gap: 28px; }
+    .buy-group { break-inside: avoid; }
+  }
 </style>
 
 <div class="wrap">
@@ -271,6 +302,11 @@
     <div class="doma-out" id="bot-out" aria-live="polite"></div>
     <div class="doma-out" id="bot-saved" hidden></div>
   </section>
+
+  <details class="panel" id="menu-panel">
+    <summary>Меню на неделю и список покупок</summary>
+    <div class="panel-body" id="menu-body"></div>
+  </details>
 
   <details class="panel" id="rules-panel">
     <summary>Список врача: что можно и что нельзя</summary>
@@ -2665,6 +2701,805 @@
 }
 </script>
 
+<script id="menu" type="application/json">
+{
+  "note": "Все блюда из этой книги. Большие блюда готовим один раз, остаток едим на следующий день — он помечен «ещё раз». Пить в любое время можно воду, травяной чай и морс без сахара.",
+  "sweetRule": "Совет врача: если Вика съела много сладкого (десерт, выпечку, сладкое в гостях), следующие 1–2 дня сладкого совсем мало или нет. В такие дни блюда с меткой «сладкое» заменяйте на несладкие, а ягоды к завтраку не добавляйте.",
+  "sweet": [
+    "smuzi",
+    "oladi",
+    "morozhenoe",
+    "tykva-korica",
+    "oladi-tykva",
+    "krambl",
+    "pankeyki-nut",
+    "mors"
+  ],
+  "swap": [
+    "guakamole",
+    "salat-morkov-avokado",
+    "pashtet-goroshek",
+    "oladi-zelen",
+    "grechnevye-lepyoshki-bystrye"
+  ],
+  "prep": [
+    {
+      "when": "Воскресенье вечером",
+      "what": "Замочить миндаль на ночь: утром в понедельник сделать миндальное молоко для каши.",
+      "id": "mindalnoe"
+    },
+    {
+      "when": "Понедельник вечером",
+      "what": "Замесить тесто для гречневых блинов и убрать в холодильник до утра."
+    },
+    {
+      "when": "Четверг вечером",
+      "what": "Снова замочить миндаль: в пятницу молоко нужно для панкейков.",
+      "id": "mindalnoe"
+    },
+    {
+      "when": "Суббота вечером",
+      "what": "Тесто для блинов на воскресенье — в холодильник до утра."
+    }
+  ],
+  "days": [
+    {
+      "day": "Понедельник",
+      "meals": [
+        {
+          "meal": "Завтрак",
+          "items": [
+            {
+              "id": "kasha-grechka"
+            }
+          ]
+        },
+        {
+          "meal": "Обед",
+          "items": [
+            {
+              "id": "sup-kurica"
+            },
+            {
+              "id": "salat-morkov-avokado"
+            }
+          ]
+        },
+        {
+          "meal": "Полдник",
+          "items": [
+            {
+              "id": "smuzi"
+            }
+          ]
+        },
+        {
+          "meal": "Ужин",
+          "items": [
+            {
+              "id": "treska-chesnochnoe-maslo"
+            },
+            {
+              "id": "pyure"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "day": "Вторник",
+      "meals": [
+        {
+          "meal": "Завтрак",
+          "items": [
+            {
+              "id": "bliny"
+            }
+          ]
+        },
+        {
+          "meal": "Обед",
+          "items": [
+            {
+              "id": "sup-kurica",
+              "again": true
+            }
+          ]
+        },
+        {
+          "meal": "Полдник",
+          "items": [
+            {
+              "id": "oladi-zelen"
+            }
+          ]
+        },
+        {
+          "meal": "Ужин",
+          "items": [
+            {
+              "id": "plov"
+            },
+            {
+              "id": "salat-kapusta-svekla"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "day": "Среда",
+      "meals": [
+        {
+          "meal": "Завтрак",
+          "items": [
+            {
+              "id": "oladi"
+            }
+          ]
+        },
+        {
+          "meal": "Обед",
+          "items": [
+            {
+              "id": "kotlety"
+            },
+            {
+              "id": "grechka"
+            }
+          ]
+        },
+        {
+          "meal": "Полдник",
+          "items": [
+            {
+              "id": "morozhenoe"
+            }
+          ]
+        },
+        {
+          "meal": "Ужин",
+          "items": [
+            {
+              "id": "krevetki-brokkoli"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "day": "Четверг",
+      "meals": [
+        {
+          "meal": "Завтрак",
+          "items": [
+            {
+              "id": "kasha-grechka-tykva"
+            }
+          ]
+        },
+        {
+          "meal": "Обед",
+          "items": [
+            {
+              "id": "sup-chechevica"
+            },
+            {
+              "id": "salat-kapusta-svekla",
+              "again": true
+            }
+          ]
+        },
+        {
+          "meal": "Полдник",
+          "items": [
+            {
+              "id": "grechnevye-lepyoshki-bystrye"
+            },
+            {
+              "id": "guakamole"
+            }
+          ]
+        },
+        {
+          "meal": "Ужин",
+          "items": [
+            {
+              "id": "pechen-s-lukom"
+            },
+            {
+              "id": "kapusta-tushenaya"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "day": "Пятница",
+      "meals": [
+        {
+          "meal": "Завтрак",
+          "items": [
+            {
+              "id": "pankeyki-nut"
+            }
+          ]
+        },
+        {
+          "meal": "Обед",
+          "items": [
+            {
+              "id": "kotlety",
+              "again": true
+            },
+            {
+              "id": "grechka",
+              "again": true
+            },
+            {
+              "id": "salat-brokkoli"
+            }
+          ]
+        },
+        {
+          "meal": "Полдник",
+          "items": [
+            {
+              "id": "tykva-korica"
+            }
+          ]
+        },
+        {
+          "meal": "Ужин",
+          "items": [
+            {
+              "id": "kurica-cvetnaya-kapusta"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "day": "Суббота",
+      "meals": [
+        {
+          "meal": "Завтрак",
+          "items": [
+            {
+              "id": "oladi-tykva"
+            }
+          ]
+        },
+        {
+          "meal": "Обед",
+          "items": [
+            {
+              "id": "sup-chechevica",
+              "again": true
+            },
+            {
+              "id": "tortilji-nut"
+            }
+          ]
+        },
+        {
+          "meal": "Полдник",
+          "items": [
+            {
+              "id": "krambl"
+            }
+          ]
+        },
+        {
+          "meal": "Ужин",
+          "items": [
+            {
+              "id": "yozhiki"
+            },
+            {
+              "id": "fasol-strochkovaya"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "day": "Воскресенье",
+      "meals": [
+        {
+          "meal": "Завтрак",
+          "items": [
+            {
+              "id": "bliny"
+            }
+          ]
+        },
+        {
+          "meal": "Обед",
+          "items": [
+            {
+              "id": "krolik"
+            },
+            {
+              "id": "bryusselskaya-kapusta"
+            }
+          ]
+        },
+        {
+          "meal": "Полдник",
+          "items": [
+            {
+              "id": "pashtet-goroshek"
+            },
+            {
+              "id": "tortilji-nut",
+              "again": true
+            },
+            {
+              "id": "mors"
+            }
+          ]
+        },
+        {
+          "meal": "Ужин",
+          "items": [
+            {
+              "id": "sudak-rukav"
+            },
+            {
+              "id": "salat-brokkoli",
+              "again": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "shopping": [
+    {
+      "group": "Мясо, птица, рыба",
+      "name": "Говяжья печень",
+      "amount": "500 г",
+      "for": [
+        "Говяжья печень с луком на сковороде"
+      ]
+    },
+    {
+      "group": "Мясо, птица, рыба",
+      "name": "Кролик",
+      "amount": "1 кг",
+      "for": [
+        "Кролик, тушённый с морковью"
+      ]
+    },
+    {
+      "group": "Мясо, птица, рыба",
+      "name": "Куриное филе",
+      "amount": "400 г",
+      "for": [
+        "Курица с цветной капустой на сковороде"
+      ]
+    },
+    {
+      "group": "Мясо, птица, рыба",
+      "name": "Куриные бёдра (для плова — без кожи и костей)",
+      "amount": "1 кг",
+      "for": [
+        "Куриный суп с гречкой",
+        "Плов с курицей и бурым рисом"
+      ]
+    },
+    {
+      "group": "Мясо, птица, рыба",
+      "name": "Сырые очищенные креветки",
+      "amount": "450 г",
+      "for": [
+        "Креветки с брокколи, чесноком и имбирём"
+      ]
+    },
+    {
+      "group": "Мясо, птица, рыба",
+      "name": "Фарш индейки",
+      "amount": "1 кг",
+      "for": [
+        "Котлеты из индейки в духовке",
+        "Ёжики из индейки с бурым рисом"
+      ]
+    },
+    {
+      "group": "Мясо, птица, рыба",
+      "name": "Филе судака (или трески, хека)",
+      "amount": "700 г",
+      "for": [
+        "Судак с овощами в рукаве"
+      ]
+    },
+    {
+      "group": "Мясо, птица, рыба",
+      "name": "Филе трески",
+      "amount": "500 г",
+      "for": [
+        "Треска на сковороде в чесночном масле"
+      ]
+    },
+    {
+      "group": "Овощи и зелень",
+      "name": "Белокочанная капуста",
+      "amount": "1,4 кг",
+      "for": [
+        "Салат из капусты, моркови и свёклы",
+        "Тушёная капуста с морковью"
+      ]
+    },
+    {
+      "group": "Овощи и зелень",
+      "name": "Брокколи (можно замороженную)",
+      "amount": "800 г",
+      "for": [
+        "Креветки с брокколи, чесноком и имбирём",
+        "Салат с брокколи, огурцом и авокадо",
+        "Судак с овощами в рукаве"
+      ]
+    },
+    {
+      "group": "Овощи и зелень",
+      "name": "Брюссельская капуста (можно замороженную)",
+      "amount": "500 г",
+      "for": [
+        "Брюссельская капуста в сливочном масле с зеленью"
+      ]
+    },
+    {
+      "group": "Овощи и зелень",
+      "name": "Зелень: укроп, петрушка, кинза",
+      "amount": "4 пучка",
+      "for": [
+        "Куриный суп с гречкой",
+        "Морковный салат с авокадо и грецкими орехами",
+        "Треска на сковороде в чесночном масле",
+        "Нутовые оладьи с зеленью",
+        "Котлеты из индейки в духовке",
+        "Суп-пюре из красной чечевицы",
+        "Гуакамоле с огурцом",
+        "Говяжья печень с луком на сковороде",
+        "Тушёная капуста с морковью",
+        "Курица с цветной капустой на сковороде",
+        "Брюссельская капуста в сливочном масле с зеленью",
+        "Паштет из зелёного горошка с мятой"
+      ]
+    },
+    {
+      "group": "Овощи и зелень",
+      "name": "Зелёный горошек замороженный",
+      "amount": "400 г",
+      "for": [
+        "Паштет из зелёного горошка с мятой"
+      ]
+    },
+    {
+      "group": "Овощи и зелень",
+      "name": "Кабачок",
+      "amount": "2 шт.",
+      "for": [
+        "Куриный суп с гречкой",
+        "Котлеты из индейки в духовке"
+      ]
+    },
+    {
+      "group": "Овощи и зелень",
+      "name": "Лук",
+      "amount": "12 шт.",
+      "for": [
+        "Куриный суп с гречкой",
+        "Плов с курицей и бурым рисом",
+        "Котлеты из индейки в духовке",
+        "Гречка с луком и морковью",
+        "Суп-пюре из красной чечевицы",
+        "Говяжья печень с луком на сковороде",
+        "Тушёная капуста с морковью",
+        "Курица с цветной капустой на сковороде",
+        "Ёжики из индейки с бурым рисом",
+        "Кролик, тушённый с морковью"
+      ]
+    },
+    {
+      "group": "Овощи и зелень",
+      "name": "Морковь",
+      "amount": "16 шт.",
+      "for": [
+        "Куриный суп с гречкой",
+        "Морковный салат с авокадо и грецкими орехами",
+        "Плов с курицей и бурым рисом",
+        "Салат из капусты, моркови и свёклы",
+        "Гречка с луком и морковью",
+        "Суп-пюре из красной чечевицы",
+        "Тушёная капуста с морковью",
+        "Ёжики из индейки с бурым рисом",
+        "Кролик, тушённый с морковью",
+        "Судак с овощами в рукаве"
+      ]
+    },
+    {
+      "group": "Овощи и зелень",
+      "name": "Огурцы",
+      "amount": "4 шт.",
+      "for": [
+        "Гуакамоле с огурцом",
+        "Салат с брокколи, огурцом и авокадо"
+      ]
+    },
+    {
+      "group": "Овощи и зелень",
+      "name": "Свежая мята",
+      "amount": "20 г",
+      "for": [
+        "Паштет из зелёного горошка с мятой"
+      ]
+    },
+    {
+      "group": "Овощи и зелень",
+      "name": "Свёкла",
+      "amount": "1 шт.",
+      "for": [
+        "Салат из капусты, моркови и свёклы"
+      ]
+    },
+    {
+      "group": "Овощи и зелень",
+      "name": "Стручковая фасоль (можно замороженную)",
+      "amount": "400 г",
+      "for": [
+        "Стручковая фасоль с чесноком"
+      ]
+    },
+    {
+      "group": "Овощи и зелень",
+      "name": "Тыква, лучше мускатная (вес очищенной)",
+      "amount": "1,1 кг",
+      "for": [
+        "Каша из гречневых хлопьев с тыквой",
+        "Тыква, запечённая с корицей",
+        "Тыквенные оладьи с корицей",
+        "Ёжики из индейки с бурым рисом"
+      ]
+    },
+    {
+      "group": "Овощи и зелень",
+      "name": "Цветная капуста (можно замороженную)",
+      "amount": "1,3 кг",
+      "for": [
+        "Пюре из цветной капусты",
+        "Курица с цветной капустой на сковороде",
+        "Судак с овощами в рукаве"
+      ]
+    },
+    {
+      "group": "Овощи и зелень",
+      "name": "Чеснок",
+      "amount": "2 головки (20 зубчиков)",
+      "for": [
+        "Треска на сковороде в чесночном масле",
+        "Плов с курицей и бурым рисом",
+        "Креветки с брокколи, чесноком и имбирём",
+        "Суп-пюре из красной чечевицы",
+        "Гуакамоле с огурцом",
+        "Курица с цветной капустой на сковороде",
+        "Стручковая фасоль с чесноком"
+      ]
+    },
+    {
+      "group": "Овощи и зелень",
+      "name": "Шпинат",
+      "amount": "130 г",
+      "for": [
+        "Зелёный смузи с ягодами",
+        "Салат с брокколи, огурцом и авокадо"
+      ]
+    },
+    {
+      "group": "Ягоды и авокадо",
+      "name": "Клюква, брусника или смородина (можно замороженную)",
+      "amount": "200 г",
+      "for": [
+        "Ягодный морс без сахара"
+      ]
+    },
+    {
+      "group": "Ягоды и авокадо",
+      "name": "Спелое авокадо",
+      "amount": "6 шт.",
+      "for": [
+        "Морковный салат с авокадо и грецкими орехами",
+        "Зелёный смузи с ягодами",
+        "Ягодное мороженое с авокадо",
+        "Гуакамоле с огурцом",
+        "Салат с брокколи, огурцом и авокадо",
+        "Паштет из зелёного горошка с мятой"
+      ]
+    },
+    {
+      "group": "Ягоды и авокадо",
+      "name": "Ягоды: клубника, малина, черника (можно замороженные)",
+      "amount": "около 1,1 кг",
+      "for": [
+        "Гречневая каша на миндальном молоке",
+        "Зелёный смузи с ягодами",
+        "Гречневые оладушки с черникой",
+        "Ягодное мороженое с авокадо",
+        "Нутовые панкейки на миндальном молоке",
+        "Ягодный крамбл с гречневой крошкой"
+      ]
+    },
+    {
+      "group": "Гречка, мука, бобовые, рис",
+      "name": "Бурый (нешлифованный) рис",
+      "amount": "360 г",
+      "for": [
+        "Плов с курицей и бурым рисом",
+        "Ёжики из индейки с бурым рисом"
+      ]
+    },
+    {
+      "group": "Гречка, мука, бобовые, рис",
+      "name": "Гречка",
+      "amount": "около 400 г",
+      "for": [
+        "Гречневая каша на миндальном молоке",
+        "Куриный суп с гречкой",
+        "Гречка с луком и морковью"
+      ]
+    },
+    {
+      "group": "Гречка, мука, бобовые, рис",
+      "name": "Гречневая мука (в составе только гречиха)",
+      "amount": "около 750 г",
+      "for": [
+        "Гречневые блины",
+        "Гречневые оладушки с черникой",
+        "Котлеты из индейки в духовке",
+        "Гречневые лепёшки на сковороде",
+        "Ягодный крамбл с гречневой крошкой"
+      ]
+    },
+    {
+      "group": "Гречка, мука, бобовые, рис",
+      "name": "Гречневые хлопья",
+      "amount": "около 180 г",
+      "for": [
+        "Каша из гречневых хлопьев с тыквой",
+        "Ягодный крамбл с гречневой крошкой"
+      ]
+    },
+    {
+      "group": "Гречка, мука, бобовые, рис",
+      "name": "Красная чечевица",
+      "amount": "200 г",
+      "for": [
+        "Суп-пюре из красной чечевицы"
+      ]
+    },
+    {
+      "group": "Гречка, мука, бобовые, рис",
+      "name": "Нутовая мука",
+      "amount": "около 650 г",
+      "for": [
+        "Нутовые оладьи с зеленью",
+        "Гречневые оладушки с черникой",
+        "Нутовые панкейки на миндальном молоке",
+        "Тыквенные оладьи с корицей",
+        "Нутовые тортильи на сковороде"
+      ]
+    },
+    {
+      "group": "Орехи",
+      "name": "Сырой миндаль",
+      "amount": "200 г",
+      "for": [
+        "Миндальное молоко"
+      ]
+    },
+    {
+      "group": "Орехи",
+      "name": "Сырые грецкие орехи",
+      "amount": "30 г",
+      "for": [
+        "Морковный салат с авокадо и грецкими орехами"
+      ]
+    },
+    {
+      "group": "Масло",
+      "name": "Сливочное масло",
+      "amount": "около 210 г",
+      "for": [
+        "Гречневая каша на миндальном молоке",
+        "Треска на сковороде в чесночном масле",
+        "Пюре из цветной капусты",
+        "Каша из гречневых хлопьев с тыквой",
+        "Ягодный крамбл с гречневой крошкой",
+        "Брюссельская капуста в сливочном масле с зеленью"
+      ]
+    },
+    {
+      "group": "Масло",
+      "name": "Топлёное масло (гхи)",
+      "amount": "около 500 г",
+      "for": [
+        "Треска на сковороде в чесночном масле",
+        "Гречневые блины",
+        "Нутовые оладьи с зеленью",
+        "Плов с курицей и бурым рисом",
+        "Гречневые оладушки с черникой",
+        "Котлеты из индейки в духовке",
+        "Гречка с луком и морковью",
+        "Креветки с брокколи, чесноком и имбирём",
+        "Суп-пюре из красной чечевицы",
+        "Гречневые лепёшки на сковороде",
+        "Говяжья печень с луком на сковороде",
+        "Тушёная капуста с морковью",
+        "Нутовые панкейки на миндальном молоке",
+        "Тыква, запечённая с корицей",
+        "Курица с цветной капустой на сковороде",
+        "Тыквенные оладьи с корицей",
+        "Нутовые тортильи на сковороде",
+        "Ёжики из индейки с бурым рисом",
+        "Стручковая фасоль с чесноком",
+        "Кролик, тушённый с морковью",
+        "Судак с овощами в рукаве"
+      ]
+    },
+    {
+      "group": "Квашеное",
+      "name": "Квашеная капуста без уксуса (нужен рассол)",
+      "amount": "1 банка (рассол — 7 ст. л.)",
+      "for": [
+        "Салат из капусты, моркови и свёклы",
+        "Салат с брокколи, огурцом и авокадо"
+      ]
+    },
+    {
+      "group": "Специи (проверьте, есть ли дома)",
+      "name": "Зира (кумин)",
+      "amount": "",
+      "for": [
+        "Плов с курицей и бурым рисом",
+        "Суп-пюре из красной чечевицы"
+      ]
+    },
+    {
+      "group": "Специи (проверьте, есть ли дома)",
+      "name": "Корица молотая",
+      "amount": "",
+      "for": [
+        "Нутовые панкейки на миндальном молоке",
+        "Тыква, запечённая с корицей",
+        "Тыквенные оладьи с корицей",
+        "Ягодный крамбл с гречневой крошкой"
+      ]
+    },
+    {
+      "group": "Специи (проверьте, есть ли дома)",
+      "name": "Лавровый лист",
+      "amount": "",
+      "for": [
+        "Куриный суп с гречкой",
+        "Тушёная капуста с морковью",
+        "Ёжики из индейки с бурым рисом",
+        "Кролик, тушённый с морковью"
+      ]
+    },
+    {
+      "group": "Специи (проверьте, есть ли дома)",
+      "name": "Сушёные травы: тимьян, базилик, орегано",
+      "amount": "",
+      "for": [
+        "Кролик, тушённый с морковью",
+        "Судак с овощами в рукаве"
+      ]
+    }
+  ]
+}
+</script>
+
 <script>
 (function () {
   var data = JSON.parse(document.getElementById('recepty').textContent);
@@ -2977,6 +3812,146 @@
       a.scrollIntoView({ block: 'start', behavior: still ? 'auto' : 'smooth' });
     }
   }
+
+  // Меню на неделю: дни, приёмы пищи, подготовка, список покупок (считает pokupki.py)
+  (function () {
+    var box = document.getElementById('menu-body');
+    var menuEl = document.getElementById('menu');
+    if (!box || !menuEl) return;
+    var menu = JSON.parse(menuEl.textContent);
+    var byId = {};
+    recipes.forEach(function (r) { byId[r.id] = r; });
+    var SHORT = { 'Понедельник': 'Пн', 'Вторник': 'Вт', 'Среда': 'Ср', 'Четверг': 'Чт', 'Пятница': 'Пт', 'Суббота': 'Сб', 'Воскресенье': 'Вс' };
+    var day = (new Date().getDay() + 6) % 7;
+    try { var saved = localStorage.getItem('menu-day'); if (saved !== null && menu.days[+saved]) day = +saved; } catch (e) {}
+    var bought = {};
+    try { bought = JSON.parse(localStorage.getItem('menu-buy') || '{}') || {}; } catch (e) { bought = {}; }
+
+    function recipeLink(id) {
+      var b = el('button', 'linkbtn', byId[id] ? byId[id].name : id);
+      b.type = 'button';
+      b.addEventListener('click', function () { openRecipe(id); });
+      return b;
+    }
+
+    box.appendChild(el('p', 'note', menu.note));
+
+    var daysBar = el('div', 'menu-days');
+    daysBar.setAttribute('role', 'toolbar');
+    daysBar.setAttribute('aria-label', 'Дни недели');
+    var dayBox = el('div', 'menu-day');
+    dayBox.setAttribute('aria-live', 'polite');
+    box.appendChild(daysBar);
+    box.appendChild(dayBox);
+
+    function renderDay() {
+      daysBar.textContent = '';
+      menu.days.forEach(function (d, i) {
+        var b = el('button', 'chip', SHORT[d.day] || d.day);
+        b.type = 'button';
+        b.setAttribute('aria-pressed', String(i === day));
+        b.setAttribute('aria-label', d.day);
+        b.addEventListener('click', function () {
+          day = i;
+          try { localStorage.setItem('menu-day', String(i)); } catch (e) {}
+          renderDay();
+        });
+        daysBar.appendChild(b);
+      });
+      var d = menu.days[day];
+      dayBox.textContent = '';
+      dayBox.appendChild(el('h3', null, d.day));
+      var wrapMeals = el('div');
+      d.meals.forEach(function (m) {
+        var row = el('div', 'meal');
+        row.appendChild(el('div', 'meal-name', m.meal));
+        var ul = el('ul', 'meal-items');
+        m.items.forEach(function (it) {
+          var li = el('li');
+          li.appendChild(recipeLink(it.id));
+          if (it.again) li.appendChild(el('span', 'pill again', 'ещё раз'));
+          else if (byId[it.id]) li.appendChild(el('span', 'pill', byId[it.id].time));
+          if ((menu.sweet || []).indexOf(it.id) !== -1) li.appendChild(el('span', 'pill sweet', 'сладкое'));
+          if (byId[it.id] && byId[it.id].tags.indexOf('рис') !== -1) li.appendChild(el('span', 'pill tag', 'рис'));
+          ul.appendChild(li);
+        });
+        row.appendChild(ul);
+        wrapMeals.appendChild(row);
+      });
+      dayBox.appendChild(wrapMeals);
+    }
+    renderDay();
+
+    if (menu.sweetRule) {
+      var tip = el('div', 'tip');
+      tip.appendChild(el('b', null, 'Сладкое. '));
+      tip.appendChild(document.createTextNode(menu.sweetRule));
+      if (menu.swap && menu.swap.length) {
+        tip.appendChild(el('div', 'note', 'Несладкие замены:'));
+        var sw = el('div', 'swaps');
+        menu.swap.forEach(function (id) { sw.appendChild(recipeLink(id)); });
+        tip.appendChild(sw);
+      }
+      box.appendChild(tip);
+    }
+
+    if (menu.prep && menu.prep.length) {
+      box.appendChild(el('h3', 'menu-sub', 'Заранее'));
+      var ol = el('ul', 'prep');
+      menu.prep.forEach(function (p) {
+        var li = el('li');
+        li.appendChild(el('b', null, p.when + '. '));
+        li.appendChild(document.createTextNode(p.what + ' '));
+        if (p.id) li.appendChild(recipeLink(p.id));
+        ol.appendChild(li);
+      });
+      box.appendChild(ol);
+    }
+
+    if (menu.shopping && menu.shopping.length) {
+      box.appendChild(el('h3', 'menu-sub', 'Список покупок на неделю'));
+      box.appendChild(el('p', 'note', 'Сколько нужно на все блюда меню, если готовить их как в рецептах. Отметки сохраняются на этом телефоне.'));
+      var cols = el('div', 'buy-cols');
+      var group = null, ul = null;
+      menu.shopping.forEach(function (x, n) {
+        if (x.group !== group) {
+          group = x.group;
+          var g = el('div', 'buy-group');
+          g.appendChild(el('h4', null, group));
+          ul = el('ul', 'buy');
+          g.appendChild(ul);
+          cols.appendChild(g);
+        }
+        var li = el('li');
+        var lab = el('label');
+        var cb = el('input');
+        cb.type = 'checkbox';
+        cb.id = 'buy-' + n;
+        cb.checked = !!bought[x.name];
+        cb.addEventListener('change', function () {
+          if (cb.checked) bought[x.name] = 1; else delete bought[x.name];
+          try { localStorage.setItem('menu-buy', JSON.stringify(bought)); } catch (e) {}
+        });
+        lab.appendChild(cb);
+        var nm = el('span', 'name', x.name);
+        nm.appendChild(el('small', null, x['for'].length > 3 ? 'в ' + x['for'].length + ' ' + plural(x['for'].length, 'блюде', 'блюдах', 'блюдах') : 'для: ' + x['for'].join(', ').toLowerCase()));
+        lab.appendChild(nm);
+        if (x.amount) lab.appendChild(el('span', 'qty', x.amount));
+        li.appendChild(lab);
+        ul.appendChild(li);
+      });
+      box.appendChild(cols);
+      var reset = el('button', 'btn btn-ghost', 'Снять все отметки');
+      reset.type = 'button';
+      reset.style.justifySelf = 'start';
+      reset.addEventListener('click', function () {
+        bought = {};
+        try { localStorage.removeItem('menu-buy'); } catch (e) {}
+        cols.querySelectorAll('input').forEach(function (i) { i.checked = false; });
+      });
+      box.appendChild(reset);
+    }
+  })();
 
   var dq = document.getElementById('doma-q');
   var domaOut = document.getElementById('doma-out');
